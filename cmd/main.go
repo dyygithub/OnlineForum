@@ -9,7 +9,7 @@ func main(){
 	r:=gin.Default()
 	//连接数据库
 	dao.Initdb()
-	//加载静态文件
+	//加载静态文件。
 	r.Static("/files","./files")
 	{
 		//注册
