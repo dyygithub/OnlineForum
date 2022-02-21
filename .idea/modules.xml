@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/redrock_homework.iml" filepath="$PROJECT_DIR$/.idea/redrock_homework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OnlineForum.iml" filepath="$PROJECT_DIR$/.idea/OnlineForum.iml" />
     </modules>
   </component>
 </project>

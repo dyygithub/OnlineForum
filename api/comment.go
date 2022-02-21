@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"path"
 	"redrock_homework/service"
 	"redrock_homework/tool"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 func Getcomment()gin.HandlerFunc{
 	return func(c *gin.Context) {
 		model,_:=strconv.Atoi(c.Query("model"))//表示要返回评论的类型，1为一级评论，2为二级评论
-		target_id,_:=strconv.Atoi(c.Query("taget_id"))//一级评论时为post_id,二级评论时为目标评论的id
+		target_id,_:=strconv.Atoi(c.Query("target_id"))//一级评论时为post_id,二级评论时为目标评论的id
 		page,_:=strconv.Atoi(c.Query("page"))
 		size,_:=strconv.Atoi(c.Query("size"))
 		if model==1{
@@ -45,16 +46,19 @@ func Publishcomment()gin.HandlerFunc{
 		model,_:=strconv.Atoi(c.PostForm("model"))
 		target_id,_:=strconv.Atoi(c.PostForm("target_id"))
 		content:=c.PostForm("content")
-		photo:=c.PostForm("photo")
+		file,_:=c.FormFile("photo")
+		dst:=path.Join("./files",file.Filename)
+		_=c.SaveUploadedFile(file,dst)
+		photo:="127.0.0.1:8080/"+dst
 		claims,_:=c.Get("claims")
 		claimsstr:=claims.(*tool.Myclaims)
 		nickname:=claimsstr.Nickname
-		user_id:=claimsstr.Nickname
-		avater:=claimsstr.Avatar
+		user_id:=claimsstr.User_id
+		avatar:=claimsstr.Avatar
 		publish_time:=time.Now().Format("200601021504")
 		praise_count:=0
 		post_id:=service.Attainpost_id(target_id)//当model为2时，通过target_id获得post_id
-		n:=service.Publishcomment(model,post_id,target_id,content,photo,nickname,user_id,avater,publish_time,praise_count)
+		n:=service.Publishcomment(model,post_id,target_id,content,photo,nickname,user_id,avatar,publish_time,praise_count)
 		comment_id:=service.Getcomment_id(content,model)
 		data:=gin.H{
 			"comment_id":comment_id,

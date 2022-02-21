@@ -64,16 +64,17 @@ func CreatePost() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		content:=c.PostForm("content")
 		topic_id:=c.PostForm("topic_id")
-		f,_:=c.FormFile("pictures")
-		dst:=path.Join("./files",f.Filename)
-		c.SaveUploadedFile(f,dst)
+		file,_:=c.FormFile("pictures")
+		dst:=path.Join("./files",file.Filename)
+		c.SaveUploadedFile(file,dst)
+		pictures:="127.0.0.1:8080/"+dst
 		value,_:=c.Get("claims")
 		claims:=value.(*tool.Myclaims)
 		user_id:=claims.User_id
 		avatar:=claims.Avatar
 		nickname:=claims.Nickname
 		pubulish_time:=time.Now().Format("200601021504")
-		n:=service.CreatePost(pubulish_time,content,"",topic_id,user_id,avatar,nickname)
+		n:=service.CreatePost(pubulish_time,content,pictures,topic_id,user_id,avatar,nickname)
 		post_id:=service.Getpost_id(content)
 		data:=gin.H{
 			"data":post_id,
@@ -130,6 +131,8 @@ func DeletePost()gin.HandlerFunc{
 		}else{
 			//删除帖子下面对应的评论
 			service.Deletecomment(post_id)
+			//删除帖子对应得收藏数据
+			service.Deletecollection(post_id)
 			c.JSON(200,gin.H{
 				"status":10000,
 				"info":"success",

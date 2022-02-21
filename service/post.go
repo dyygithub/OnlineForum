@@ -69,6 +69,11 @@ func Deletecomment(post_id int)  {
 	dao.Deletedb(sqlstr1,post_id)
 	dao.Deletedb(sqlstr2,post_id)
 }
+//删除对于这个帖子的收藏数据
+func Deletecollection(post_id int){
+	sqlstr:=`delete from colletion where post_id=?`
+	dao.Deletedb(sqlstr,post_id)
+}
 //搜索帖子
 func Searchpost(page int ,array []model.Post,size int,key string)([]model.Post,error){
 	sqlstr := "select post_id,publish_time,content,pictures,topic_id,user_id,avatar,nickname,praise_count,comment_count from post where content like CONCAT('%',?,'%')"
