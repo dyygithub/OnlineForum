@@ -1,8 +1,12 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 	"redrock_homework/dao"
 	"redrock_homework/model"
 	"redrock_homework/service"
@@ -69,6 +73,82 @@ func Login()gin.HandlerFunc{
 			"status":10000,
 			"info":"success",
 			"data":data,
+		})
+	}
+}
+//通过第三方登录，这里是借助github登录
+func Oauth()gin.HandlerFunc{
+	return func(c *gin.Context) {
+		var (
+			client_id="552c51bfa7dad98e1d8e"
+			client_secret="96c116d8008830ef23269079cb39082269a63eef"
+			redirect_url="http://127.0.0.1:8080/oauth/redirect"
+		)
+		var(
+			postTokenUrl="https://github.com/login/oauth/access_token"
+			postUserInfoUrl="https://api.github.com/user"
+		)
+		client:=&http.Client{}
+		token:=model.Token{}
+		userinfo:=model.UserAccount{}
+		code:=c.Query("code")
+		if code==""{
+			c.JSON(300,gin.H{
+				"status":-1,
+				"msg":"第三方授权失败",
+			})
+		}
+		data:=map[string]interface{}{
+			"client_id":client_id,
+			"client_secret":client_secret,
+			"redirect_url":redirect_url,
+			"code":code,
+		}
+		reqdata,err:=json.Marshal(data)
+		if err!=nil{
+			fmt.Println(err)
+		}
+		//fmt.Println(data)
+		//fmt.Println(reqdata)
+		//fmt.Println(bytes.NewReader(reqdata))
+//用授权码去申请令牌
+		resp,err:=client.Post(postTokenUrl,"application/json",bytes.NewReader(reqdata))
+		//req,_:=http.NewRequest("POST",postTokenUrl,bytes.NewReader(reqdata))
+		if err!=nil{
+			fmt.Println(err)
+		}
+		//fmt.Println(req)
+		//if err!=nil{
+		//	fmt.Println(err)
+		//}
+		respBody,err:=ioutil.ReadAll(resp.Body)
+		if err!=nil{
+			fmt.Println(err)
+		}
+		if len(respBody)==0{
+			fmt.Println("body nil")
+		}
+		err=json.Unmarshal(respBody,&token.AccessToken)
+		if err!=nil{
+			c.JSON(300,gin.H{
+				"err":err.Error(),
+			})
+		}
+//用令牌去得到用户信息
+        req1,_:=http.NewRequest("GET",postUserInfoUrl,nil)
+		req1.Header.Add("token",token.AccessToken)
+		resp2,_:=client.Do(req1)
+		resp2Body:=resp2.Body
+		resp2Data,_:=ioutil.ReadAll(resp2Body)
+		err=json.Unmarshal(resp2Data,&userinfo.Username)
+		if err!=nil{
+			c.JSON(300,gin.H{
+				"err":err.Error(),
+			})
+		}
+		c.JSON(200,gin.H{
+			"status":10000,
+			"msg":"第三方授权成功",
 		})
 	}
 }

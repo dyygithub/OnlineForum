@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"redrock_homework/api"
 	"redrock_homework/dao"
 )
@@ -13,9 +14,17 @@ func main(){
 	r.Static("/files","./files")
 	{
 		//注册
-		r.GET("/user/token",api.Login())
-		//登录并且获取token
 		r.POST("/user/register",api.Register())
+		//登录并且获取token
+		r.GET("/user/token",api.Login())
+		//通过第三方授权登录
+		r.GET("oauth/redirect",api.Oauth())
+		//重定向到要借助的第三方网站，这里指的是github
+		r.GET("/redirect/github", func(c *gin.Context) {
+			 c.Redirect(http.StatusMovedPermanently,"https://github.com" +
+				 "/login/oauth/authorize?client_id=552c51bfa7dad98e1d8e" +
+				 "&redirect_url=http://127.0.0.1:8080/oauth/redirect")
+		})
 		//刷新token
 		r.GET("/user/token/refresh",api.Refresh())
 		//修改密码

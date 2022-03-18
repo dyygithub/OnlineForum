@@ -16,3 +16,11 @@ type Userinfo struct {
 	Birthday string `json:"birthday"`
 	username string `json:"username"`
 }
+type Token struct {
+	AccessToken string `json:"access_token"`
+	TokenType string `json:"token_type"`
+}
+type AuthApp struct {
+	ClintId string `json:"clint_id"`
+	ClientSecret string `json:"client_secret"`
+}
